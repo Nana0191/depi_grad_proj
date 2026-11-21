@@ -1,0 +1,165 @@
+# this  x-airflow-common is called yaml anchor used so i can gather all this config inside just one object like a struct of configs
+#did this so i can use this anchor in building the other services like the ui ,schduler this is still not a service itself
+x-airflow-common:
+    &airflow-common
+    image: depi-airflow:2.10.5
+    build:
+       context: .  #use the custome config in docker file we made 
+       dockerfile: airflow/Dockerfile
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor  #donot have any workers just my local device
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-db:5432/${AIRFLOW_DB_NAME}
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      #this so the config variables for the webserver are known  in the container itself
+      AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_WWW_USER_USERNAME}
+      AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_WWW_USER_PASSWORD}
+      OLIST_SERVER: sqlserver
+      OLIST_DB: OlistDW
+      OLIST_USER: sa
+      OLIST_PASSWORD: ${MSSQL_SA_PASSWORD}
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./python/scripts:/app/scripts  #here it will have the same volume for the data and scripts so it can enable the 
+      #airflow to see them and schedule the jobs
+      - ./sql:/app/sql  #so it can access the valid sql file 
+      - ./data:/app/data
+    user: "${AIRFLOW_UID}:0"
+    networks:
+      - depi_network
+services:
+  python:
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: depi_python
+    command: ["sleep", "infinity"]
+    environment:
+      OLIST_SERVER: sqlserver
+      OLIST_DB: OlistDW
+      OLIST_USER: sa
+      OLIST_PASSWORD: ${MSSQL_SA_PASSWORD}
+    depends_on:  #cannot load the data until the server is ready
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - depi_network
+    volumes:
+      - ./data:/app/data    ##  to save all files of data  weather it was gathered /processed or the translation file on docker
+      ##so folder data is on app/data inside the container
+      - ./python/scripts:/app/scripts  #here we also save the files of script  so if anything changed it is saved  in a volume
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: depi_sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - depi_network
+    healthcheck: #this will make sure or will send the signal if the server is healthy so later python script can load data
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+# add the airflow archi :
+#  airflow scheduler  and web ui and the metadata postgres
+#this is the metadata DB that airflow uses 
+  airflow-db:
+    image: postgres:16
+    container_name: depi_airflow_db
+    environment:
+      POSTGRES_USER: ${AIRFLOW_DB_USER}
+      POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+      POSTGRES_DB: ${AIRFLOW_DB_NAME}
+
+    
+    volumes:
+      - airflow_postgres_data:/var/lib/postgresql/data
+    networks:
+      - depi_network
+      # doesnot mean when airflow starts that the metadata is ready to recieve connections
+      #so we must monoitor this DB till it can be ready and be healthy so it can recieve the connections
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AIRFLOW_DB_USER} -d ${AIRFLOW_DB_NAME}"]
+      interval: 10s  #every 10 sec docker run the test to check the health of the DB
+      retries: 5  #retry only if failed
+      start_period: 5s  #before testing or trying anything we gave the DB 5sec to start and be healthy
+      timeout: 5s  #if tests remained more than 5 sec then it failed
+      
+
+
+     #this will only work one time 
+  airflow-init:
+      <<: *airflow-common
+      entrypoint: /bin/bash
+      #here we do that so the airflow init wont start till the postgres db is healthy 
+      depends_on:
+        airflow-db:
+          condition: service_healthy
+        sqlserver:  # dags will also depend on the DB server bec it will conncet to it 
+          condition: service_healthy
+      command:
+        - -c
+        - |
+          set -e
+          airflow db migrate
+          airflow users create \
+            --username "$AIRFLOW_WWW_USER_USERNAME" \
+            --password "$AIRFLOW_WWW_USER_PASSWORD" \
+            --firstname Admin \
+            --lastname User \
+            --role Admin \
+            --email admin@example.com
+    
+    # airflow user create :this to create the user just once where airflow start create username and password for the webserver ui
+    #this one is resposnible for the ui
+  airflow-webserver:
+      <<: *airflow-common
+      command: webserver
+      ports:
+        - "8080:8080"
+      depends_on:
+        airflow-init:
+          condition: service_completed_successfully  #here that the once job by init is done so the webserver can work
+    #now the one who is responsible for monitoring the dags folder and when to excute the dags
+  airflow-scheduler:
+      <<: *airflow-common
+      command: scheduler
+      depends_on:
+        airflow-init:
+          condition: service_completed_successfully
+  #this container is used to provide interface to our sql server database enginer to view our data and write queries        
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: depi_cloudbeaver
+    environment:
+      CB_SERVER_NAME: CloudBeaver
+      CB_ADMIN_NAME: ${CB_ADMIN_NAME}
+      CB_ADMIN_PASSWORD: ${CB_ADMIN_PASSWORD}
+    ports:
+      - "8978:8978"
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    networks:
+      - depi_network
+
+##this way we declare the network and volumes that exsist  so we use them up there 
+networks:
+  depi_network:
+    driver: bridge
+    #network type is bridge that connects the services with each other
+
+volumes:
+  sqlserver_data:
+  airflow_postgres_data:
+  cloudbeaver_data:

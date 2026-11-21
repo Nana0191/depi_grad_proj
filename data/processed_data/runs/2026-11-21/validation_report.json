@@ -1,0 +1,359 @@
+{
+  "run_date": "2026-11-21",
+  "finished_at": "2026-11-21T21:40:18",
+  "tables_skipped": [],
+  "load_stats": {
+    "dim_products": {
+      "inserted": 0,
+      "updated": 0,
+      "unchanged": 13508,
+      "total_after": 13508
+    },
+    "dim_customers": {
+      "inserted": 0,
+      "updated": 0,
+      "unchanged": 33147,
+      "total_after": 33147
+    },
+    "fact_order_items": {
+      "inserted": 0,
+      "updated": 0,
+      "unchanged": 37325,
+      "total_after": 37325
+    },
+    "fact_orders": {
+      "inserted": 0,
+      "updated": 0,
+      "unchanged": 33147,
+      "total_after": 33147
+    }
+  },
+  "rejected_rows": {},
+  "watermark_after": "2017-11-07 19:34:08",
+  "validation": {
+    "errors": 0,
+    "warnings": 8,
+    "checks": [
+      {
+        "table": "customers",
+        "name": "schema_missing_columns",
+        "severity": "error",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "customers",
+        "name": "schema_unexpected_columns",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "customers",
+        "name": "empty_table",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "customers",
+        "name": "null_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "customers",
+        "name": "duplicate_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "customers",
+        "name": "bad_state_code",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "schema_missing_columns",
+        "severity": "error",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "schema_unexpected_columns",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "empty_table",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "null_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "duplicate_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "unknown_order_status",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "orders",
+        "name": "bad_purchase_timestamp",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "schema_missing_columns",
+        "severity": "error",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "schema_unexpected_columns",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "empty_table",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "null_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "duplicate_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "price_not_positive",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "order_items",
+        "name": "freight_negative",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "schema_missing_columns",
+        "severity": "error",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "schema_unexpected_columns",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "empty_table",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "null_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "duplicate_primary_key",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "product_weight_g_missing_or_not_positive",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 2,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "product_length_cm_missing_or_not_positive",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 2,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "product_height_cm_missing_or_not_positive",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 2,
+        "detail": ""
+      },
+      {
+        "table": "products",
+        "name": "product_width_cm_missing_or_not_positive",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 2,
+        "detail": ""
+      },
+      {
+        "table": "fact_orders",
+        "name": "approved_before_purchase",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "fact_orders",
+        "name": "delivered_before_carrier_pickup",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 23,
+        "detail": ""
+      },
+      {
+        "table": "fact_orders",
+        "name": "delivered_status_without_delivery_date",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 1,
+        "detail": ""
+      },
+      {
+        "table": "fact_orders",
+        "name": "delivery_date_but_not_delivered_status",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 5,
+        "detail": ""
+      },
+      {
+        "table": "fact_orders",
+        "name": "orders_without_items",
+        "severity": "info",
+        "passed": false,
+        "bad_rows": 415,
+        "detail": ""
+      },
+      {
+        "table": "fact_orders",
+        "name": "items_value_matches_items_total",
+        "severity": "error",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": "diff=0.00"
+      },
+      {
+        "table": "fact_order_items",
+        "name": "shipping_limit_before_year_2016",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": ""
+      },
+      {
+        "table": "dim_products",
+        "name": "category_missing",
+        "severity": "warn",
+        "passed": false,
+        "bad_rows": 303,
+        "detail": "category set to 'unknown'"
+      },
+      {
+        "table": "dim_products",
+        "name": "category_untranslated",
+        "severity": "warn",
+        "passed": true,
+        "bad_rows": 0,
+        "detail": "no English name; Portuguese name kept"
+      },
+      {
+        "table": "dim_products",
+        "name": "missing_dimensions",
+        "severity": "info",
+        "passed": false,
+        "bad_rows": 2,
+        "detail": "kept, flagged has_missing_dimensions"
+      },
+      {
+        "table": "fact_orders",
+        "name": "batch_overlaps_watermark",
+        "severity": "info",
+        "passed": false,
+        "bad_rows": 1,
+        "detail": "batch starts at 2016-09-04 21:15:19 <= watermark 2017-11-07 19:34:08: replay or late-arriving data (handled by upsert)"
+      }
+    ]
+  }
+}
