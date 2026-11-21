@@ -6,3 +6,7 @@ __pycache__/
 .vscode/
 
 airflow/logs/
+
+# Generated data (keep only the translation file)
+data/gathered_data/
+data/processed_data/
