@@ -12,7 +12,7 @@ SELECT p.product_category_name_english AS category,
        d.year,
        d.month,
        SUM(CASE WHEN s.order_item_id > 0 THEN 1 ELSE 0 END) AS items_sold,
-       SUM(s.item_total)                                     AS revenue
+       SUM(s.item_total)     AS revenue
 FROM fact_sales s
 JOIN dim_products p ON p.product_key = s.product_key
 JOIN dim_date d     ON d.date_key = s.purchase_date_key

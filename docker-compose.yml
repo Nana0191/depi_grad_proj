@@ -152,6 +152,56 @@ services:
       - cloudbeaver_data:/opt/cloudbeaver/workspace
     networks:
       - depi_network
+  superset-db:  #this is the metadata db for the superset so it can save its charts 
+    image: postgres:16  #the metadata  db will be postgres image 
+    container_name: depi_superset_db
+    environment:
+      POSTGRES_USER: ${SUPERSET_DB_USER}
+      POSTGRES_PASSWORD: ${SUPERSET_DB_PASSWORD}
+      POSTGRES_DB: ${SUPERSET_DB_NAME}
+    volumes:  #  its data must be saved on the disk so it wont get lost 
+      - superset_postgres_data:/var/lib/postgresql/data
+    networks:
+      - depi_network 
+      #put it in the same network so all services can communicate
+    healthcheck: 
+      test: ["CMD-SHELL", "pg_isready -U ${SUPERSET_DB_USER} -d ${SUPERSET_DB_NAME}"]
+      #every 10 sec we check on this service if up and running or not 
+      interval: 10s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+  
+
+#this service used to open the interface of the superset for us 
+  superset:
+    build: ./superset  #this will use the dockerfile to build the image 
+    image: depi-superset
+    container_name: depi_superset
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_DB_USER: ${SUPERSET_DB_USER}
+      SUPERSET_DB_PASSWORD: ${SUPERSET_DB_PASSWORD}
+      SUPERSET_DB_NAME: ${SUPERSET_DB_NAME}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_ADMIN_USERNAME: ${SUPERSET_ADMIN_USERNAME}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      SUPERSET_ADMIN_FIRSTNAME: ${SUPERSET_ADMIN_FIRSTNAME}
+      SUPERSET_ADMIN_LASTNAME: ${SUPERSET_ADMIN_LASTNAME}
+      SUPERSET_ADMIN_EMAIL: ${SUPERSET_ADMIN_EMAIL}
+    volumes:  #here we save the config.py file 
+    #this is called bind volume 
+      - ./superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+    ports: #ports so it can gave me the link to open the interface 
+      - "8088:8088"
+    networks:
+      - depi_network
+    depends_on:
+      superset-db:  #here we cannot start unless theat the superset metadata db is ready and healthy 
+        condition: service_healthy
+    #it will use this command to enable the docker to run this service
+    command: ["/bin/sh", "-c", "superset run -h 0.0.0.0 -p 8088"]
+
 
 ##this way we declare the network and volumes that exsist  so we use them up there 
 networks:
@@ -163,3 +213,5 @@ volumes:
   sqlserver_data:
   airflow_postgres_data:
   cloudbeaver_data:
+  superset_postgres_data:
+ 

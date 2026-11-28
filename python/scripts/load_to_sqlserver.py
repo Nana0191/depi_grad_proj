@@ -77,7 +77,7 @@ def make_engine():
 )
     #and this is how to make connection we need middle between this and the db which is the driver
 
-    return create_engine(connection_url, fast_executemany=True)
+    return create_engine(connection_url, fast_executemany=False)
 def to_date_key(series: pd.Series) -> pd.Series:
     dt = pd.to_datetime(series, errors="coerce")
     formatted = dt.dt.strftime("%Y%m%d")
@@ -505,6 +505,14 @@ def build_fact_sales_df(
         print(f"WARNING: dropped {before - len(fact_df)} fact rows with no customer_key/purchase_date_key")
 
     fact_df["customer_key"] = fact_df["customer_key"].astype(int)
+    print("approval_hours dtype:", fact_df["approval_hours"].dtype)
+
+    invalid = pd.to_numeric(
+       fact_df["approval_hours"],
+       errors="coerce"
+            ).isna() & fact_df["approval_hours"].notna()
+
+    print(fact_df.loc[invalid, ["order_id", "approval_hours"]].head(20))
     fact_df["purchase_date_key"] = fact_df["purchase_date_key"].astype(int)
     if "delivered_date_key" in fact_df.columns:
         fact_df["delivered_date_key"] = pd.to_numeric(fact_df["delivered_date_key"], errors="coerce").astype("Int64")
@@ -563,7 +571,9 @@ def merge_fact_sales(fact_df: pd.DataFrame, engine):
     if fact_df.empty:
         print(f"{'fact_sales':18s} merged      0 delta rows")
         return
-
+    import numpy as np                                            # <-- add
+    fact_df = fact_df.replace([np.inf, -np.inf], np.nan)          # <-- add
+    fact_df = fact_df.astype(object).where(fact_df.notna(), None)
     with engine.begin() as conn:
         conn.execute(text("""
             IF OBJECT_ID('tempdb..#stg_fact_sales') IS NOT NULL DROP TABLE #stg_fact_sales;

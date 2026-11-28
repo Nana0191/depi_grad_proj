@@ -8,7 +8,7 @@ from pathlib import Path
 
 default_args = {
     "retries": 3,  #if the task failed it gave it 3 chances
-    "retry_delay": timedelta(minutes=5),  #retry after every 5 min 
+    "retry_delay": timedelta(minutes=1),  #retry after every 5 min 
 }
 
 def check_github_batch(batch_date):  #here it will check the githup for the 4 main files with batch date as the intended date
